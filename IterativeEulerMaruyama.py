@@ -48,8 +48,8 @@ class IterativeEulerMaruyamaMultivariate:
     using the Euler-Maruyama method
     """
 
-    # a(t: float, X: float) -> float
-    # b(t: float, X: float) -> [[float],[float]]
+    # a(t: float, X: [float]) -> [float]
+    # b(t: float, X: [float]) -> [[float],[float]]
     # times: [float]
 
     def __init__(self, a, b, times, dim):
@@ -66,40 +66,55 @@ class IterativeEulerMaruyamaMultivariate:
     def getSolution(self, Xt0):
         """
         Solve the SDE using an iterative Euler-Maruyama scheme
-        :param Xt0:
-        :return: the tuple "(t, X_t)"
+        :param Xt0: [float]
+        :return: The solution X_t as [[float]]
         """
         dt = np.diff(self.times)
-        solution = np.empty([self.dim, len(times)])
-        dW = np.empty([self.dim, len(times)-1])
+        dW = np.transpose(np.multiply(np.vectorize(math.sqrt)(dt),
+                          np.reshape(np.random.normal(0, 1, self.dim * len(dt)), [self.dim, len(dt)])))
 
-        # TODO: only works for dim=1, need to do matrix stuff
-        for i in range(self.dim):
-            dW[i] = np.multiply(np.vectorize(math.sqrt)(dt), np.random.normal(0, 1, len(dt)))
+        solution = np.empty([len(times), self.dim])
 
-            solution[i][0] = Xt0[i]
-            for j in range(len(self.times) - 1):
-                solution[i][j+1] = solution[i][j] + self.a(self.times[j + 1], solution[i][j]) * dt[j] \
-                                    + self.b(self.times[j + 1], solution[i][j]) * dW[i][j]
+        solution[0] = Xt0
+        for i in range(len(times) - 1):
+            solution[i+1] = solution[i] + self.a(times[i+1], solution[i]) * dt[i] \
+                            + np.matmul(self.b(times[i+1], solution[i]), dW[i])
 
-        return solution
+        return np.transpose(solution)
 
 
 if __name__ == '__main__':
-    mu = 10
-    sigma = 1
+    mu = 0.75
+    sigma = 0.30
     dt = 0.01
-    times = [i * dt for i in range(301)]
-    X0 = 0
+    times = [i * dt for i in range(math.floor(3/dt))]
+    X0 = 300
 
-    # Attempt at solving a path for the Langevin equation
-    langevin = IterativeEulerMaruyamaMultivariate(
+    # Solve n independent Langevin equations
+    n = 2
+    langevinModel = IterativeEulerMaruyamaMultivariate(
         lambda t, X: -mu * X,
-        lambda t, X: sigma,
-        times, 1
+        lambda t, X: 50 * sigma * np.identity(n),
+        times, n
     )
 
-    solution = langevin.getSolution([X0])
+    langevinSol = langevinModel.getSolution(n * [X0])
 
-    plt.plot(times, *solution)
+    for sol in langevinSol:
+        plt.plot(times, sol)
     plt.show()
+
+    # Solve m independent Geometric Brownian Motions
+    m = 5
+    gbmModel = IterativeEulerMaruyamaMultivariate(
+        lambda t, X: mu * X,
+        lambda t, X: sigma * np.diag(X),
+        times, m
+    )
+
+    gbmSol = gbmModel.getSolution(m * [X0])
+
+    for sol in gbmSol:
+        plt.plot(times, sol)
+    plt.show()
+
