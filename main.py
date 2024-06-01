@@ -22,8 +22,11 @@ if __name__ == '__main__':
 
     langevinSol = langevinModel.getSolution(n * [X0])
 
+    fig, ax = plt.subplots(1)
+    fig.suptitle("Langevin equation")
+
     for sol in langevinSol:
-        plt.plot(times, sol)
+        ax.plot(times, sol)
     plt.show()
 
     # Solve m independent Geometric Brownian Motions
@@ -36,14 +39,16 @@ if __name__ == '__main__':
 
     gbmSol = gbmModel.getSolution(m * [X0])
 
+    fig, axs = plt.subplots(2)
+    fig.suptitle("Geometric Brownian motion + 95% CI")
+
     for sol in gbmSol:
-        plt.plot(times, sol)
-    plt.show()
+        axs[0].plot(times, sol)
 
     mean = ConfidenceIntervalMaker.getMeanSeries(gbmSol)
     ci = ConfidenceIntervalMaker.getConfidenceInterval(gbmSol, 0.95)
 
     plt.plot(times, mean)
     for i in ci:
-        plt.plot(times,i)
+        axs[1].plot(times,i)
     plt.show()
