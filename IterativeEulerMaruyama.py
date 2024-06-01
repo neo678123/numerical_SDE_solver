@@ -3,7 +3,7 @@ import math
 import matplotlib.pyplot as plt
 
 
-class iterativeEulerMaruyama:
+class IterativeEulerMaruyama:
     """
     Framework for solving SDE of the form
         dX = a(t,X)dt + b(t,X)dW
@@ -23,9 +23,6 @@ class iterativeEulerMaruyama:
         self.a = a
         self.b = b
         self.times = times
-
-    # dW = np.random.normal(0, 1, 1) * math.sqrt(self.dt)
-    # return prevPoint + self.a(t, prevPoint) * self.dt + self.b(t, prevPoint) * dW
 
     def getSolution(self, Xt0):
         """
@@ -52,7 +49,7 @@ if __name__ == '__main__':
     X0 = 0
 
     # Attempt at solving a path for the Langevin equation
-    langevin = iterativeEulerMaruyama(
+    langevin = IterativeEulerMaruyama(
         lambda t, X: -mu * X,
         lambda t, X: sigma,
         times
