@@ -59,9 +59,9 @@ class IterativeEulerMaruyama:
         n_t = math.floor(maxTime / timeSize)
         p = np.empty([n_t, n_x - 2])
 
-        # sketchy stuff, essentially makes p[0] = delta_X0
-        X0Index = math.floor((X0 - minValue) / meshSize)
-        p[0][X0Index] = 1
+        # # sketchy stuff, essentially makes p[0] = delta_X0
+        # X0Index = math.floor((X0 - minValue) / meshSize)
+        p[0] = [math.exp(-(minValue + meshSize * i)**2) for i in range(n_x - 2)]
 
         for t in range(n_t - 1):
             derivDrift = np.diff(np.multiply(
