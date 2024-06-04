@@ -4,6 +4,7 @@ import math
 
 from src.ConfidenceIntervalsMaker import ConfidenceIntervalMaker
 from src.IterativeEulerMaruyama import IterativeEulerMaruyamaMultivariate
+from src.IterativeEulerMaruyama import IterativeEulerMaruyama
 
 if __name__ == '__main__':
     mu = 0.75
@@ -36,6 +37,16 @@ if __name__ == '__main__':
         lambda t, X: sigma * np.diag(X),
         times, m
     )
+
+    gbmModel1d = IterativeEulerMaruyama(
+        lambda t, X: mu * X,
+        lambda t, X: sigma * X,
+        times
+    )
+    pdf = gbmModel1d.getPDF(-10, 10, 0.1, 10, 0.1, 1)
+    for p in pdf:
+        plt.plot([0.1 * i for i in range(-100, 98)], p)
+    plt.show()
 
     gbmSol = gbmModel.getSolution(m * [X0])
 

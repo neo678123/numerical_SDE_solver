@@ -1,5 +1,6 @@
 import numpy as np
 import math
+
 from src.FiniteDifferenceSolver import FiniteDifferenceSolver
 
 
@@ -39,6 +40,49 @@ class IterativeEulerMaruyama:
                             + self.b(self.times[i + 1], solution[i]) * dW[i])
 
         return solution
+
+    # TODO: Doesn't work, also terrible code
+    def getPDF(self, minValue: float, maxValue: float, meshSize: float, maxTime: float, timeSize: float, X0):
+        """
+        Solves Fokker-Planck equation for X with X_i in [minValues_i, maxValues_i]
+        for 0 <= t <= maxTime with a mesh size meshSize
+
+        :param minValue
+        :param maxValue
+        :param meshSize
+        :param maxTime
+        :param timeSize
+        :param X0
+        """
+
+        n_x = math.floor(abs(maxValue - minValue) / meshSize)
+        n_t = math.floor(maxTime / timeSize)
+        p = np.empty([n_t, n_x - 2])
+
+        # sketchy stuff, essentially makes p[0] = delta_X0
+        X0Index = math.floor((X0 - minValue) / meshSize)
+        p[0][X0Index] = 1
+
+        for t in range(n_t - 1):
+            derivDrift = np.diff(np.multiply(
+                            np.vectorize(lambda X: self.a(t * timeSize, X))(meshSize * np.array(range(n_x)))[:n_x-2],
+                            p[t]))
+
+            derivDrift = np.append(derivDrift, [0])
+
+            secondDerivDiffusion = np.empty(n_x - 2)
+            D = 0.5 * np.vectorize(lambda x: x**2)(self.b(t, meshSize * np.array(range(n_x))))
+            for i in range(n_x - 4):
+                secondDerivDiffusion[i] = (D[i+2] * p[t][i+2] -
+                                           2 * D[i+1] * p[t][i+1] +
+                                           D[i] * p[t][i]) / (meshSize**2)
+
+            p[t+1] = timeSize * (p[t] - derivDrift[:n_x-1] + secondDerivDiffusion)
+
+        return p
+
+
+
 
 
 class IterativeEulerMaruyamaMultivariate:
