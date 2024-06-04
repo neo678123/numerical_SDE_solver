@@ -38,16 +38,6 @@ if __name__ == '__main__':
         times, m
     )
 
-    gbmModel1d = IterativeEulerMaruyama(
-        lambda t, X: mu * X,
-        lambda t, X: sigma * X,
-        times
-    )
-    pdf = gbmModel1d.getPDF(-10, 10, 0.1, 10, 0.1, 1)
-    for p in pdf:
-        plt.plot([0.1 * i for i in range(-100, 98)], p)
-    plt.show()
-
     gbmSol = gbmModel.getSolution(m * [X0])
 
     fig, axs = plt.subplots(2)
@@ -62,4 +52,14 @@ if __name__ == '__main__':
     plt.plot(times, mean)
     for i in ci:
         axs[1].plot(times,i)
+    plt.show()
+
+    gbmModel1d = IterativeEulerMaruyama(
+        lambda t, X: mu * X,
+        lambda t, X: sigma * X,
+        times
+    )
+    pdf = gbmModel1d.getPDF(-10, 10, 0.1, 10, 0.1, 1)
+    for p in pdf:
+        plt.plot([0.1 * i for i in range(-100, 98)], p)
     plt.show()
