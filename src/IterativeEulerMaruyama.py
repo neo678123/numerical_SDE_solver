@@ -61,23 +61,24 @@ class IterativeEulerMaruyama:
 
         # # sketchy stuff, essentially makes p[0] = delta_X0
         # X0Index = math.floor((X0 - minValue) / meshSize)
-        p[0] = [math.exp(-(minValue + meshSize * i)**2) for i in range(n_x - 2)]
+        p[0] = [math.exp(-(minValue + meshSize * i)**2)/math.sqrt(2*math.pi) for i in range(n_x - 2)]
 
         for t in range(n_t - 1):
             derivDrift = np.diff(np.multiply(
-                            np.vectorize(lambda X: self.a(t * timeSize, X))(meshSize * np.array(range(n_x)))[:n_x-2],
+                            np.vectorize(lambda X: self.a(t * timeSize, X))(minValue +
+                                                                            meshSize * np.array(range(n_x)))[:n_x-2],
                             p[t]))
 
             derivDrift = np.append(derivDrift, [0])
 
-            secondDerivDiffusion = np.empty(n_x - 2)
-            D = 0.5 * np.vectorize(lambda x: x**2)(self.b(t, meshSize * np.array(range(n_x))))
+            secondDerivDiffusion = np.zeros(n_x - 2)
+            D = 0.5 * np.vectorize(lambda x: x**2)(self.b(t, minValue + meshSize * np.array(range(n_x))))
             for i in range(n_x - 4):
                 secondDerivDiffusion[i] = (D[i+2] * p[t][i+2] -
                                            2 * D[i+1] * p[t][i+1] +
                                            D[i] * p[t][i]) / (meshSize**2)
 
-            p[t+1] = timeSize * (p[t] - derivDrift[:n_x-1] + secondDerivDiffusion)
+            p[t+1] = p[t] + timeSize * (-1 * derivDrift[:n_x-1] + secondDerivDiffusion)
 
         return p
 
